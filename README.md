@@ -1,4 +1,4 @@
-# CryptoBot.NET 
+# CryptoBot.NET 🚀
 
 **WIP - Pull requests welcome!**
 
@@ -20,7 +20,7 @@ Risk Management
 * Stop loss
 
 Fast Execution
-* Low latenbcy using WebSockets when available
+* Low latency using WebSockets when available
 
 ## Disclaimer
 
@@ -61,3 +61,8 @@ The bot API uses the SharedSymbol abstraction record and exchange clients use sp
 
 
 ## Telegram bot
+
+Telegram Bot to allow remote control of the crypto bot.
+
+* Start, stop, and monitor the bot directly from Telegram
+* Check current balances and trades stats
