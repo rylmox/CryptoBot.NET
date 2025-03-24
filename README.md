@@ -5,10 +5,9 @@
 Minimalistic .NET trading bot
 
 Planned strategies:
+* Triangular Arbitrage
 * Dollar Cost Averaging
 * Smart Order Routing
-* Triangular Arbitrage
-* ...
 
 Multi-Exchange support
 * Binance
@@ -28,13 +27,19 @@ This software is provided as-is with no guarantees. Crypto trading is risky — 
 
 ## Triangular Arbitrage
 
-Support multiple paths but limited to 3 steps direct arbitrage at the moment (See StrategyTrading.ComputeOrderQuantities).
-The orders quantities are spread for the 3 steps. The quantities take into account fees and a gross profit is estimated.
+Path is limited to 3 steps direct arbitrage at the moment (See StrategyTrading.ComputeOrderQuantities).
+The orders quantities are spread for the 3 steps. The quantities take into account the fees and a gross profit is estimated.
 The bot start trading only when the cross rate ration and the gross arbitrage spread are profitable.
 
 ## Configuration
 
-Binance has Live ("live") or TestNet ("testnet") environment. Pairs must be specified using slash format (e.g. BTC/USDT).
+The main configuration is defined in `appsettings.json`. Another optional configuration can be specified using the `--config` paramters
+and will be combined with the main config. It's recommended to store sensitive data, such as exchange and Telegram bot API keys, in `appsettings-dev.json` instead 
+of the main config file to avoid accidentally comitting them to repository.
+
+Test your strategy on a test net first. Binance has a Live (`live`) and TestNet (`testnet`) environment. 
+
+Asset pairs must be specified using the slash format (e.g. BTC/USDT).
 
 ``` JSON
         "ApiCredentials": {

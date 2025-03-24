@@ -14,7 +14,7 @@
         "request": "launch",
         "preLaunchTask": "build",
         "program": "${workspaceFolder}/Console/bin/Debug/net9.0/Console.dll",
-        "args": ["--config=appsettings.json"],
+        "args": ["--config=appsettings-dev.json"],
         "cwd": "${workspaceFolder}",
         "console": "integratedTerminal",
         "stopAtEntry": false

@@ -9,20 +9,9 @@ public sealed class Program
     {
         Option<string> configFilePath = new("--config", "Config path") { IsRequired = true };
 
-        // Example of option validator
-        // var ageOption = new Option<int>("--age", "Your age");
-        // ageOption.AddValidator(result =>
-        // {
-        //     if (result.GetValueOrDefault<int>() < 18)
-        //     {
-        //         result.ErrorMessage = "❌ Age must be 18 or older.";
-        //     }
-        // });
-
-        var rootCommand = new RootCommand("🚀 CryptoBot.NET")
+        var rootCommand = new RootCommand("CryptoBot.NET🚀")
         {
             configFilePath,
-            // ageOption
         };
 
         rootCommand.SetHandler(async configFilePath =>
