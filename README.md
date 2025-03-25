@@ -25,6 +25,12 @@ Fast Execution
 
 This software is provided as-is with no guarantees. Crypto trading is risky — **you may lose money**. Use this bot at your own risk and comply with all laws. The developers are not liable for any losses or damages.
 
+## Run
+
+Only tested on Linux.
+
+## Contribute
+
 ## Triangular Arbitrage
 
 Path is limited to 3 steps direct arbitrage at the moment (See StrategyTrading.ComputeOrderQuantities).

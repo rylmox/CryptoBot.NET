@@ -5,9 +5,9 @@ namespace Engine.Trades;
 public sealed class SpotTradeBuilder
 {
     private string _symbol = string.Empty;
-    private decimal _quantity;
-    private SharedOrderType _type;
-    private decimal? _orderPrice;
+    private decimal _quantity = 0;
+    private SharedOrderType _type = SharedOrderType.Limit;
+    private decimal _orderPrice = 0;
     private decimal? _stopPrice;
     private SharedOrderSide _orderSide = SharedOrderSide.Buy;
 
@@ -47,9 +47,25 @@ public sealed class SpotTradeBuilder
     {
         return _type switch
         {
-            SharedOrderType.Other when _stopPrice.HasValue => new StopLossTrade(_symbol, _quantity, _stopPrice.Value),
-            SharedOrderType.Market => new MarketTrade(_symbol, _quantity),
-            _ => throw new InvalidOperationException($"Invalid order type - {_type}")
+            SharedOrderType.Other when _stopPrice.HasValue => CreateStopLossTrade(),
+            SharedOrderType.Limit => CreateLimitTrade(),
+            SharedOrderType.Market => CreateMarketTrade(),
+            _ => throw new NotImplementedException()
         };
+    }
+
+    private LimitTrade CreateLimitTrade()
+    {
+        return new LimitTrade(_symbol, _quantity, _orderPrice) { Side = _orderSide };
+    }
+
+    private MarketTrade CreateMarketTrade()
+    {
+        return new MarketTrade(_symbol, _quantity, _orderPrice) { Side = _orderSide };
+    }
+
+    private StopLossTrade CreateStopLossTrade()
+    {
+        return new StopLossTrade(_symbol, _quantity, _orderPrice, _stopPrice!.Value) { Side = _orderSide };
     }
 }

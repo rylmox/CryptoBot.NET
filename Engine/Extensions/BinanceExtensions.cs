@@ -73,6 +73,29 @@ public static class BinanceExtensions
         };
     }
 
+    public static SharedSpotOrder ToSharedSpotOrder(this BinancePlacedOrder order)
+    {
+        return new SharedSpotOrder(
+            symbol: order.Symbol,
+            orderId: order.Id.ToString(),
+            orderType: order.Type.ToSharedOrderType(),
+            orderSide: order.Side.ToSharedOrderSide(),
+            orderStatus: order.Status.ToSharedOrderStatus(),
+            createTime: order.CreateTime
+        )
+        {
+            Quantity = order.Quantity,
+            QuantityFilled = order.QuantityFilled,
+            QuoteQuantity = order.QuoteQuantity,
+            QuoteQuantityFilled = order.QuoteQuantityFilled,
+            OrderPrice = order.Price,
+            AveragePrice = order.AverageFillPrice,
+            ClientOrderId = order.ClientOrderId,
+            CreateTime = order.CreateTime,
+            UpdateTime = order.UpdateTime,
+        };
+    }
+
     public static SharedSpotOrder ToSharedSpotOrder(this BinanceStreamOrderUpdate order)
     {
         return new(

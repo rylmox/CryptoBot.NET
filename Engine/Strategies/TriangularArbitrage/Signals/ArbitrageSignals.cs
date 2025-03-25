@@ -1,11 +1,11 @@
-namespace Engine.Strategies.TriangularArbitrage.Signals;
-
 using Engine.Trades;
 using Microsoft.Extensions.Logging;
 using CryptoExchange.Net.SharedApis;
 using Engine.Utilities;
 using Engine.Common;
 using Engine.Extensions;
+
+namespace Engine.Strategies.TriangularArbitrage.Signals;
 
 using PairPrecision = (int @base, int quote);
 using Engine.Clients;
@@ -15,7 +15,7 @@ public class ArbitrageSignals(IExchangeClient client, ILogger<ArbitrageSignals> 
     public SharedSymbol[] Symbols { get; set; } = [];
     public PairPrecisionLimits Precisions { get; set; } = [];
     public required string HoldingAsset { get; init; }
-    public required decimal InitialOrderAmount { get; init; }
+    public required decimal OrderAmount { get; init; }
     public required decimal Fee { get; init; }
     public int StepCount => Symbols.Length;
 
@@ -82,7 +82,7 @@ public class ArbitrageSignals(IExchangeClient client, ILogger<ArbitrageSignals> 
     // TODO Only support direct arbitrage for now
     public void ComputeOrderQuantities()
     {
-        decimal orderAmount = InitialOrderAmount;
+        decimal orderAmount = OrderAmount;
         
         var (basePrecision0, quotePrecision0) = GetPrecision(0);
         var (basePrecision1, quotePrecision1) = GetPrecision(1);

@@ -7,7 +7,6 @@ using Engine.Extensions;
 using Engine.Utilities;
 using Engine.Common;
 using Binance.Net.Interfaces;
-using System.Runtime.CompilerServices;
 
 namespace Engine.Clients;
 
@@ -98,14 +97,37 @@ public class BinanceClient(ILogger<BinanceClient> logger, IBinanceSocketClient s
     {
         return trade switch
         {
-            StopLossTrade stopLoss => await PlaceStopLossOrder(stopLoss),
+            StopLossTrade stopLoss => await PlaceStopLossOrder(stopLoss, ct),
+            LimitTrade  limit => await PlaceLimitOrder(limit, ct),
             _ => throw new NotImplementedException()
         };
     }
 
-    private static Task<SharedSpotOrder?> PlaceStopLossOrder(StopLossTrade trade)
+    private static Task<SharedSpotOrder?> PlaceStopLossOrder(StopLossTrade trade, CancellationToken ct)
     {
         throw new NotImplementedException();
+    }
+
+    private async Task<SharedSpotOrder?> PlaceLimitOrder(LimitTrade trade, CancellationToken ct)
+    {
+        var response = await socketClient.SpotApi.Trading.PlaceOrderAsync(
+            symbol: trade.Symbol,
+            side: trade.Side.ToBinanceOrderSide(), 
+            type: trade.Type.ToBinanceOrderType(), 
+            quantity: trade.Quantity, 
+            price: trade.Price, 
+            timeInForce: trade.TimeInForce.ToBinanceTimeInForce(), 
+            newClientOrderId: trade.OrderClientId,
+            ct: ct
+        );
+
+        if (!response.Success)
+        {
+            logger.LogClientError(response.Error);
+            return null;
+        }
+
+        return response.Data.Result.ToSharedSpotOrder();
     }
 
     public async Task<bool> SubscribeToPriceChanges(IEnumerable<SharedSymbol> symbols, Action<string, SharedBookTicker> onPriceChanged, CancellationToken ct)

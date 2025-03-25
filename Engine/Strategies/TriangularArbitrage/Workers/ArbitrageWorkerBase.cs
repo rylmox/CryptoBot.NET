@@ -33,11 +33,8 @@ public abstract class ArbitrageWorkerBase(
 
         if (!await Initialize(ct))
         {
-            TryUpdateState(StrategyState.Initializing, StrategyState.Failed);
             return;
         }
-
-        TryUpdateState(StrategyState.Initializing, StrategyState.Running);
 
         while (true)
         {
@@ -46,37 +43,8 @@ public abstract class ArbitrageWorkerBase(
         }
     }
 
-    private async Task PlaceOrder(int orderIdx)
-    {
-        SpotTradeBuilder builder = signals.GetOrderDataAt(orderIdx);
-
-        SpotTradeBase trade = builder
-            .SetStopPrice(50000m)
-            .Build();
-
-        await foreach (SharedSpotOrder order in orderManager.PlaceOrderAsync(trade, _ct))
-        {
-            switch (order.Status)
-            {
-                case SharedOrderStatus.Filled:
-                    break;
-
-                case SharedOrderStatus.Canceled:
-                    break;
-
-                case SharedOrderStatus.Open:
-                    break;
-            }
-        }
-    }
-
     protected virtual async Task<bool> Initialize(CancellationToken ct)
     {
-        if (!TryUpdateState(StrategyState.Stopped, StrategyState.Initializing))
-        {
-            return false;
-        }
-
         return InitializePairSymbols() &&
             await FetchPrecisionLimit(ct) &&
             InitializeSignals();
@@ -112,11 +80,6 @@ public abstract class ArbitrageWorkerBase(
 
     public async Task EvaluateArbitrageProfitability()
     {
-        if (!TryUpdateState(StrategyState.Running, StrategyState.EvaluatingArbitrage))
-        {
-            return;
-        }
-
         signals.Update(pricesManager.GetSnapshot());
 
         if (signals.Spread > 0)
@@ -124,27 +87,41 @@ public abstract class ArbitrageWorkerBase(
             await StartArbitrage();
             logger.LogArbitrageSignalResult(Pairs, signals.Ratio, signals.Spread);
         }
-        else 
+        else if (signals.Ratio >= MinProfitability && signals.Spread <= 0)
         {
-            if (signals.Ratio >= MinProfitability && signals.Spread <= 0)
-            {
-                // TODO log warning
-            }
-
-            TryUpdateState(StrategyState.EvaluatingArbitrage, StrategyState.Running);
+            // TODO log warning
         }
     }
 
     protected async Task StartArbitrage()
     {
-        if (!TryUpdateState(StrategyState.EvaluatingArbitrage, StrategyState.ArbitrageStarted))
-        {
-            return;
-        }
-
         for (int orderIdx = 0; orderIdx < 3; ++orderIdx)
         {
             await PlaceOrder(orderIdx);
+        }
+    }
+
+    private async Task PlaceOrder(int orderIdx)
+    {
+        SpotTradeBuilder builder = signals.GetOrderDataAt(orderIdx);
+
+        SpotTradeBase trade = builder
+            // .SetStopPrice(50000m) // TODO add stop loss
+            .Build();
+
+        await foreach (SharedSpotOrder order in orderManager.PlaceOrderAsync(trade, _ct))
+        {
+            switch (order.Status)
+            {
+                case SharedOrderStatus.Filled:
+                    break;
+
+                case SharedOrderStatus.Canceled:
+                    break;
+
+                case SharedOrderStatus.Open:
+                    break;
+            }
         }
     }
 
@@ -161,54 +138,10 @@ public abstract class ArbitrageWorkerBase(
 
     public abstract Task ProcessArbitrage();
 
-    protected void RestartArbitrage()
-    {
-        if (TryUpdateState(StrategyState.EvaluatingArbitrage, StrategyState.Running))
-        {
-            return;
-        } 
-        else if (TryUpdateState(StrategyState.ArbitrageStarted, StrategyState.Running))
-        {
-            return;
-        }
-    }
-
-    protected void StopWorker()
-    {
-        if (TryUpdateState(StrategyState.Initializing, StrategyState.Stopped))
-        {
-            return;
-        }
-        else if (TryUpdateState(StrategyState.Failed, StrategyState.Stopped))
-        {
-            return;
-        }
-        else if (TryUpdateState(StrategyState.Running, StrategyState.Stopped))
-        {
-            return;
-        }
-        else if (TryUpdateState(StrategyState.EvaluatingArbitrage, StrategyState.Stopped))
-        {
-            return;
-        } 
-        else if (TryUpdateState(StrategyState.ArbitrageStarted, StrategyState.Stopped))
-        {
-            return;
-        }
-    }
-
     public virtual async Task Terminate(CancellationToken ct)
     {
         // TODO Remove - simulate clean up
         await Task.Delay(TimeSpan.FromSeconds(2));
-
-        StopWorker();
-    }
-
-    public bool TryUpdateState(StrategyState expectedStatus, StrategyState newStatus)
-    {
-        StrategyState originalValue = Interlocked.CompareExchange(ref _state, newStatus, expectedStatus);
-        return originalValue == expectedStatus;
     }
 
     public string GetState()
